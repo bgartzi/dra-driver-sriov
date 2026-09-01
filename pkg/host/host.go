@@ -40,16 +40,26 @@ func buildSysPath(path string) string {
 	return path
 }
 
+// buildSysPathByBus constructs a device path under /sys/bus/${bus}/devices
+func buildSysPathByBusAndDevice(bus, device, subPath string) string {
+	basePath := filepath.Join(consts.SysBus, bus, consts.BusDevices, device, subPath)
+	return buildSysPath(basePath)
+}
+
 // buildSysBusPciPath constructs a PCI device path under /sys/bus/pci/devices
 func buildSysBusPciPath(pciAddress, subPath string) string {
-	basePath := filepath.Join(consts.SysBusPci, pciAddress, subPath)
+	return buildSysPathByBusAndDevice(consts.PciBus, pciAddress, subPath)
+}
+
+// buildSysPathByBus constructs a device path under /sys/bus/${bus}/drivers
+func buildSysPathByBusAndDriver(bus, driver, subPath string) string {
+	basePath := filepath.Join(consts.SysBus, bus, consts.BusDrivers, driver, subPath)
 	return buildSysPath(basePath)
 }
 
 // buildSysBusPciDriverPath constructs a driver path under /sys/bus/pci/drivers
 func buildSysBusPciDriverPath(driver, subPath string) string {
-	basePath := filepath.Join("/sys/bus/pci/drivers", driver, subPath)
-	return buildSysPath(basePath)
+	return buildSysPathByBusAndDriver(consts.PciBus, driver, subPath)
 }
 
 // buildProcPath constructs a path under /proc with RootDir prefix if set

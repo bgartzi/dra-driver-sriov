@@ -102,7 +102,7 @@ var _ = Describe("Consts", func() {
 
 		It("should have correct network device constants", func() {
 			Expect(consts.NetClass).To(Equal(0x02))
-			Expect(consts.SysBusPci).To(Equal("/sys/bus/pci/devices"))
+			Expect(consts.SysBus).To(Equal("/sys/bus"))
 		})
 	})
 

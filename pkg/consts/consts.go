@@ -53,8 +53,11 @@ const (
 	AttributeNUMANode  = DraNetCompatPrefix + "/numaNode"
 
 	// Network device constants
-	NetClass  = 0x02 // Network controller class
-	SysBusPci = "/sys/bus/pci/devices"
+	NetClass   = 0x02 // Network controller class
+	SysBus     = "/sys/bus"
+	PciBus     = "pci"
+	BusDevices = "devices"
+	BusDrivers = "drivers"
 
 	// Eswitch mode constants (as reported by devlink)
 	EswitchModeLegacy    = "legacy"
