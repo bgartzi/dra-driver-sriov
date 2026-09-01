@@ -59,6 +59,7 @@ const (
 	NetClass   = 0x02 // Network controller class
 	SysBus     = "/sys/bus"
 	PciBus     = "pci"
+	VdpaBus    = "vdpa"
 	BusDevices = "devices"
 	BusDrivers = "drivers"
 
@@ -75,6 +76,11 @@ const (
 
 	// RDMA device constants
 	SysClassInfiniband = "/sys/class/infiniband"
+
+	// VDPA device constants
+	VdpaDriverCore   = "vdpa"
+	VdpaDriverVirtio = "virtio_vdpa"
+	VdpaDriverVhost  = "vhost_vdpa"
 )
 
 // Kubernetes standard attributes

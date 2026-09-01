@@ -85,6 +85,34 @@ func (mr *MockInterfaceMockRecorder) BindPciDeviceDriver(pciAddress, config any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BindPciDeviceDriver", reflect.TypeOf((*MockInterface)(nil).BindPciDeviceDriver), pciAddress, config)
 }
 
+// CreateVDPADevice mocks base method.
+func (m *MockInterface) CreateVDPADevice(pciAddr string, config *v1alpha1.VdpaConfig) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateVDPADevice", pciAddr, config)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateVDPADevice indicates an expected call of CreateVDPADevice.
+func (mr *MockInterfaceMockRecorder) CreateVDPADevice(pciAddr, config any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVDPADevice", reflect.TypeOf((*MockInterface)(nil).CreateVDPADevice), pciAddr, config)
+}
+
+// DeleteVDPADevice mocks base method.
+func (m *MockInterface) DeleteVDPADevice(pciAddr string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteVDPADevice", pciAddr)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteVDPADevice indicates an expected call of DeleteVDPADevice.
+func (mr *MockInterfaceMockRecorder) DeleteVDPADevice(pciAddr any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVDPADevice", reflect.TypeOf((*MockInterface)(nil).DeleteVDPADevice), pciAddr)
+}
+
 // EnsureDpdkModuleLoaded mocks base method.
 func (m *MockInterface) EnsureDpdkModuleLoaded(driver string) error {
 	m.ctrl.T.Helper()
@@ -111,6 +139,20 @@ func (m *MockInterface) EnsureVdpaModuleIsLoaded() error {
 func (mr *MockInterfaceMockRecorder) EnsureVdpaModuleIsLoaded() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVdpaModuleIsLoaded", reflect.TypeOf((*MockInterface)(nil).EnsureVdpaModuleIsLoaded))
+}
+
+// EnsureVdpaModulesLoaded mocks base method.
+func (m *MockInterface) EnsureVdpaModulesLoaded() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureVdpaModulesLoaded")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnsureVdpaModulesLoaded indicates an expected call of EnsureVdpaModulesLoaded.
+func (mr *MockInterfaceMockRecorder) EnsureVdpaModulesLoaded() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVdpaModulesLoaded", reflect.TypeOf((*MockInterface)(nil).EnsureVdpaModulesLoaded))
 }
 
 // EnsureVhostModulesLoaded mocks base method.
@@ -228,6 +270,21 @@ func (m *MockInterface) GetRDMADevicesForPCI(pciAddr string) []string {
 func (mr *MockInterfaceMockRecorder) GetRDMADevicesForPCI(pciAddr any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRDMADevicesForPCI", reflect.TypeOf((*MockInterface)(nil).GetRDMADevicesForPCI), pciAddr)
+}
+
+// GetVDPACharDevice mocks base method.
+func (m *MockInterface) GetVDPACharDevice(pciAddr string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVDPACharDevice", pciAddr)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVDPACharDevice indicates an expected call of GetVDPACharDevice.
+func (mr *MockInterfaceMockRecorder) GetVDPACharDevice(pciAddr any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVDPACharDevice", reflect.TypeOf((*MockInterface)(nil).GetVDPACharDevice), pciAddr)
 }
 
 // GetVFIODeviceFile mocks base method.

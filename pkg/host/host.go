@@ -146,6 +146,10 @@ type Interface interface {
 
 	// VDPA device functions
 	GetVdpaMgmtDevInfo(pciAddr string) (*VdpaMgmtDevInfo, error)
+	CreateVDPADevice(pciAddr string, config *configapi.VdpaConfig) error
+	DeleteVDPADevice(pciAddr string) error
+	GetVDPACharDevice(pciAddr string) (string, error)
+	EnsureVdpaModulesLoaded() error
 }
 
 // Host provides unified host system functionality for SR-IOV, PCI operations, and driver management
@@ -154,6 +158,7 @@ type Host struct {
 	rdmaProvider     RdmaProvider
 	netlinkProvider  NetlinkProvider
 	sriovnetProvider SriovnetProvider
+	vdpaProvider     VdpaProvider
 }
 
 // NewHost creates a new Host instance
@@ -163,6 +168,7 @@ func NewHost() Interface {
 		rdmaProvider:     newRdmaProvider(),
 		netlinkProvider:  &defaultNetlinkProvider{},
 		sriovnetProvider: &defaultSriovnetProvider{},
+		vdpaProvider:     &defaultVdpaProvider{},
 	}
 }
 
@@ -855,4 +861,46 @@ func (h *Host) GetVdpaMgmtDevInfo(pciAddr string) (*VdpaMgmtDevInfo, error) {
 	}
 
 	return &VdpaMgmtDevInfo{VirtioFeatures: mgmtDev.SupportedFeatures, MaxVQs: mgmtDev.MaxVQS}, nil
+}
+
+func (h *Host) CreateVDPADevice(pciAddr string, config *configapi.VdpaConfig) error {
+	vdpaDevName := vdpaDevName(pciAddr)
+	err := h.vdpaProvider.CreateVDPADevice(vdpaDevName, pciAddr, config)
+	if err != nil {
+		return err
+	}
+
+	return h.BindDriverByBusAndDevice(consts.VdpaBus, vdpaDevName, string(config.Driver))
+}
+
+func (h *Host) DeleteVDPADevice(pciAddr string) error {
+	vdpaDevName := vdpaDevName(pciAddr)
+	return h.vdpaProvider.DeleteVDPADevice(vdpaDevName)
+}
+
+func (h *Host) GetVDPACharDevice(pciAddr string) (string, error) {
+	vdpaDevName := vdpaDevName(pciAddr)
+	vdpaDevDriver, err := h.GetDriverByBusAndDevice(consts.VdpaBus, vdpaDevName)
+	if err != nil {
+		return "", err
+	}
+	switch vdpaDevDriver {
+	case consts.VdpaDriverVirtio:
+		return "", nil
+	case consts.VdpaDriverVhost:
+		return h.vdpaProvider.GetVDPACharDevice(vdpaDevName)
+	}
+
+	return "", fmt.Errorf("can't find chardev device for vdpa device %s. Unknown vdpa device driver %s", vdpaDevName, vdpaDevDriver)
+}
+
+func (h *Host) EnsureVdpaModulesLoaded() error {
+	return h.ensureModulesLoaded(
+		"EnsureVdpaModulesLoaded",
+		[]string{
+			consts.VdpaDriverCore,
+			consts.VdpaDriverVhost,
+			consts.VdpaDriverVirtio,
+		},
+	)
 }
