@@ -254,6 +254,11 @@ func (s *Manager) applyConfigOnDevice(ctx context.Context, ifNameIndex *int, cla
 		}
 	}
 	// Bind device to driver if specified in config
+	// TODO@bgartzi: really lazy this, but WILLFIX
+	if config.Vdpa != nil && config.Driver != "default" {
+		return nil, fmt.Errorf("vfConfig driver must be set to default when combined with VDPA devices, found %s", config.Driver)
+	}
+
 	originalDriver, err := host.GetHelpers().BindPciDeviceDriver(pciAddress, config)
 	if err != nil {
 		return nil, fmt.Errorf("error binding device %s to driver: %w", pciAddress, err)
@@ -273,6 +278,22 @@ func (s *Manager) applyConfigOnDevice(ctx context.Context, ifNameIndex *int, cla
 		if err := host.GetHelpers().EnsureVhostModulesLoaded(); err != nil {
 			return nil, restoreDriverOnError(fmt.Errorf("failed to ensure vhost modules are loaded: %w", err))
 		}
+	}
+
+	vdpaChardev := ""
+	if config.Vdpa != nil {
+		if err := host.GetHelpers().EnsureVdpaModulesLoaded(); err != nil {
+			return nil, restoreDriverOnError(fmt.Errorf("failed to ensure vdpa modules are loaded: %w", err))
+		}
+
+		if err := host.GetHelpers().CreateVDPADevice(pciAddress, config.Vdpa); err != nil {
+			return nil, restoreDriverOnError(fmt.Errorf("failed to create vdpa device on device %s: %w", pciAddress, err))
+		}
+
+		if vdpaChardev, err = host.GetHelpers().GetVDPACharDevice(pciAddress); err != nil {
+			return nil, restoreDriverOnError(fmt.Errorf("failed to fetch vhost_vdpa chardev for %s: %w", pciAddress, err))
+		}
+
 	}
 
 	// create environment variables
@@ -320,6 +341,14 @@ func (s *Manager) applyConfigOnDevice(ctx context.Context, ifNameIndex *int, cla
 		deviceNodes = append(deviceNodes, &cdispec.DeviceNode{
 			Path:     "/dev/net/tun",
 			HostPath: "/dev/net/tun",
+			Type:     "c", // character device
+		})
+	}
+
+	if config.Vdpa != nil && vdpaChardev != "" {
+		deviceNodes = append(deviceNodes, &cdispec.DeviceNode{
+			Path:     vdpaChardev,
+			HostPath: vdpaChardev,
 			Type:     "c", // character device
 		})
 	}
@@ -507,6 +536,14 @@ func (s *Manager) unprepareDevices(preparedDevices drasriovtypes.PreparedDevices
 			logger.V(2).Info("Skipping prepared device with nil config during unprepare", "device", preparedDevice.PciAddress)
 			continue
 		}
+
+		if preparedDevice.Config.Vdpa != nil {
+			if err := host.GetHelpers().DeleteVDPADevice(preparedDevice.PciAddress); err != nil {
+				logger.Error(err, "Failed to delete vdpa device", "device", preparedDevice.PciAddress, "type", preparedDevice.Config.Vdpa.Driver)
+				return fmt.Errorf("failed to remove vdpa device from device %s: %w", preparedDevice.PciAddress, err)
+			}
+		}
+
 		// Restore original driver if a driver change was made
 		if preparedDevice.Config.Driver != "" {
 			if err := host.GetHelpers().RestorePciDeviceDriver(preparedDevice.PciAddress, preparedDevice.OriginalDriver); err != nil {
