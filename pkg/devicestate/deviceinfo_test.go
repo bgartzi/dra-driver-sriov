@@ -284,10 +284,10 @@ var _ = Describe("DeviceInfo compatibility", Serial, func() {
 			},
 		}
 
-		mockHost.EXPECT().BindDeviceDriver("0000:01:00.1", gomock.Any()).Return("ixgbevf", nil)
+		mockHost.EXPECT().BindPciDeviceDriver("0000:01:00.1", gomock.Any()).Return("ixgbevf", nil)
 		mockHost.EXPECT().GetVFIODeviceFile("0000:01:00.1").Return("/dev/vfio/1", "/dev/vfio/1", nil)
 		mockHost.EXPECT().GetRDMADevicesForPCI("0000:01:00.1").Return([]string{})
-		mockHost.EXPECT().RestoreDeviceDriver("0000:01:00.1", "ixgbevf").Return(nil)
+		mockHost.EXPECT().RestorePciDeviceDriver("0000:01:00.1", "ixgbevf").Return(nil)
 
 		encodedConfig := []byte(`{"apiVersion":"sriovnetwork.k8snetworkplumbingwg.io/v1alpha1","kind":"VfConfig","driver":"vfio-pci"}`)
 
@@ -364,7 +364,7 @@ var _ = Describe("DeviceInfo compatibility", Serial, func() {
 			},
 		}
 
-		mockHost.EXPECT().BindDeviceDriver("0000:01:00.1", gomock.Any()).Return("", nil)
+		mockHost.EXPECT().BindPciDeviceDriver("0000:01:00.1", gomock.Any()).Return("", nil)
 
 		claim := &resourceapi.ResourceClaim{
 			ObjectMeta: metav1.ObjectMeta{

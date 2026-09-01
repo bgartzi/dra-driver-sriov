@@ -110,9 +110,9 @@ type Interface interface {
 	GetNumaNode(pciAddress string) (string, error)
 	GetPCIeRoot(pciAddress string) (string, error)
 
-	// Driver binding operations
-	BindDeviceDriver(pciAddress string, config *configapi.VfConfig) (string, error)
-	RestoreDeviceDriver(pciAddress string, originalDriver string) error
+	// Driver binding operations for Pci devices
+	BindPciDeviceDriver(pciAddress string, config *configapi.VfConfig) (string, error)
+	RestorePciDeviceDriver(pciAddress string, originalDriver string) error
 
 	// Low-level driver operations
 	GetDriverByBusAndDevice(bus, device string) (string, error)
@@ -383,15 +383,15 @@ func (h *Host) GetPCIeRoot(pciAddress string) (string, error) {
 
 // High-level Driver Management Functions
 
-// BindDeviceDriver binds a device to the specified driver based on config.Driver:
+// BindPciDeviceDriver binds a device to the specified driver based on config.Driver:
 // - If config.Driver == "", nothing is done
 // - If config.Driver == "default", binds device to default driver
 // - Otherwise, binds device to the specified driver
-func (h *Host) BindDeviceDriver(device string, config *configapi.VfConfig) (string, error) {
+func (h *Host) BindPciDeviceDriver(device string, config *configapi.VfConfig) (string, error) {
 	bus := consts.PciBus
 
 	if config.Driver == "" {
-		h.log.V(2).Info("BindDeviceDriver(): no driver specified, skipping", "bus", bus, "device", device)
+		h.log.V(2).Info("BindPciDeviceDriver(): no driver specified, skipping", "bus", bus, "device", device)
 		return "", nil
 	}
 
@@ -402,29 +402,29 @@ func (h *Host) BindDeviceDriver(device string, config *configapi.VfConfig) (stri
 	}
 
 	if config.Driver == "default" {
-		h.log.V(2).Info("BindDeviceDriver(): binding device to default driver", "bus", bus, "device", device)
+		h.log.V(2).Info("BindPciDeviceDriver(): binding device to default driver", "bus", bus, "device", device)
 		if err := h.BindDefaultDriverByBusAndDevice(bus, device); err != nil {
 			return "", fmt.Errorf("failed to bind device %s/%s to default driver: %w", bus, device, err)
 		}
 		return currentDriver, nil
 	}
 
-	h.log.V(2).Info("BindDeviceDriver(): binding device to driver", "bus", bus, "device", device, "driver", config.Driver)
+	h.log.V(2).Info("BindPciDeviceDriver(): binding device to driver", "bus", bus, "device", device, "driver", config.Driver)
 	if err := h.BindDriverByBusAndDevice(bus, device, config.Driver); err != nil {
 		return "", fmt.Errorf("failed to bind device %s/%s to driver %s: %w", bus, device, config.Driver, err)
 	}
 	return currentDriver, nil
 }
 
-// RestoreDeviceDriver restores a device to its original driver
-func (h *Host) RestoreDeviceDriver(device, originalDriver string) error {
+// RestorePciDeviceDriver restores a device to its original driver
+func (h *Host) RestorePciDeviceDriver(device, originalDriver string) error {
 	bus := consts.PciBus
 	if originalDriver == "" {
-		h.log.V(2).Info("RestoreDeviceDriver(): no original driver, binding to default", "bus", bus, "device", device)
+		h.log.V(2).Info("RestorePciDeviceDriver(): no original driver, binding to default", "bus", bus, "device", device)
 		return h.BindDefaultDriverByBusAndDevice(bus, device)
 	}
 
-	h.log.V(2).Info("RestoreDeviceDriver(): restoring device to original driver", "bus", bus, "device", device, "driver", originalDriver)
+	h.log.V(2).Info("RestorePciDeviceDriver(): restoring device to original driver", "bus", bus, "device", device, "driver", originalDriver)
 	return h.BindDriverByBusAndDevice(bus, device, originalDriver)
 }
 

@@ -24,7 +24,7 @@ var _ = Describe("Manager", func() {
 			defer func() { host.Helpers = originalHelpers }()
 			host.Helpers = mockHost
 
-			mockHost.EXPECT().RestoreDeviceDriver("0000:00:00.1", "ixgbe").Return(nil).Times(1)
+			mockHost.EXPECT().RestorePciDeviceDriver("0000:00:00.1", "ixgbe").Return(nil).Times(1)
 
 			s := &Manager{}
 			devices := drasriovtypes.PreparedDevices{

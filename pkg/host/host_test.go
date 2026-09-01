@@ -437,12 +437,12 @@ var _ = Describe("Host", func() {
 			})
 		})
 
-		Context("BindDeviceDriver", func() {
+		Context("BindPciDeviceDriver", func() {
 			It("should do nothing when config.Driver is empty", func() {
 				tearDown = fs.Use()
 				config := &configapi.VfConfig{Driver: ""}
 
-				originalDriver, err := h.BindDeviceDriver("0000:01:00.0", config)
+				originalDriver, err := h.BindPciDeviceDriver("0000:01:00.0", config)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(originalDriver).To(BeEmpty())
 			})
@@ -458,7 +458,7 @@ var _ = Describe("Host", func() {
 				tearDown = fs.Use()
 				config := &configapi.VfConfig{Driver: "default"}
 
-				_, err := h.BindDeviceDriver("0000:01:00.0", config)
+				_, err := h.BindPciDeviceDriver("0000:01:00.0", config)
 				Expect(err).NotTo(HaveOccurred())
 			})
 		})

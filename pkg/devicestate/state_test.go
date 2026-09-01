@@ -177,7 +177,7 @@ var _ = Describe("Manager", Serial, func() {
 				},
 			}
 
-			mockHost.EXPECT().RestoreDeviceDriver("0000:01:00.1", "ixgbevf").Return(nil)
+			mockHost.EXPECT().RestorePciDeviceDriver("0000:01:00.1", "ixgbevf").Return(nil)
 
 			m := &Manager{}
 			err := m.unprepareDevices(preparedDevices)
@@ -195,7 +195,7 @@ var _ = Describe("Manager", Serial, func() {
 				},
 			}
 
-			mockHost.EXPECT().RestoreDeviceDriver("0000:01:00.1", "ixgbevf").
+			mockHost.EXPECT().RestorePciDeviceDriver("0000:01:00.1", "ixgbevf").
 				Return(fmt.Errorf("restore failed"))
 
 			m := &Manager{}
@@ -213,7 +213,7 @@ var _ = Describe("Manager", Serial, func() {
 				},
 			}
 
-			// No mock expectation - RestoreDeviceDriver should not be called
+			// No mock expectation - RestorePciDeviceDriver should not be called
 
 			m := &Manager{}
 			err := m.unprepareDevices(preparedDevices)
@@ -475,10 +475,10 @@ var _ = Describe("Manager", Serial, func() {
 				},
 			}
 
-			mockHost.EXPECT().BindDeviceDriver("0000:01:00.1", gomock.Any()).Return("ixgbevf", nil)
+			mockHost.EXPECT().BindPciDeviceDriver("0000:01:00.1", gomock.Any()).Return("ixgbevf", nil)
 			mockHost.EXPECT().GetVFIODeviceFile("0000:01:00.1").Return("/dev/vfio/1", "/dev/vfio/1", nil)
 			mockHost.EXPECT().GetRDMADevicesForPCI("0000:01:00.1").Return([]string{})
-			mockHost.EXPECT().RestoreDeviceDriver("0000:01:00.1", "ixgbevf").Return(fmt.Errorf("restore failed"))
+			mockHost.EXPECT().RestorePciDeviceDriver("0000:01:00.1", "ixgbevf").Return(fmt.Errorf("restore failed"))
 
 			claim := &resourceapi.ResourceClaim{
 				ObjectMeta: metav1.ObjectMeta{
@@ -544,7 +544,7 @@ var _ = Describe("Manager", Serial, func() {
 				},
 			}
 
-			mockHost.EXPECT().BindDeviceDriver("0000:01:00.1", gomock.Any()).Return("", nil)
+			mockHost.EXPECT().BindPciDeviceDriver("0000:01:00.1", gomock.Any()).Return("", nil)
 			mockHost.EXPECT().GetRDMADevicesForPCI("0000:01:00.1").Return([]string{})
 
 			claim := &resourceapi.ResourceClaim{
@@ -633,7 +633,7 @@ var _ = Describe("Manager", Serial, func() {
 				},
 			}
 
-			mockHost.EXPECT().BindDeviceDriver("0000:01:00.1", gomock.Any()).Return("", nil)
+			mockHost.EXPECT().BindPciDeviceDriver("0000:01:00.1", gomock.Any()).Return("", nil)
 
 			ifNameIndex := 0
 			prepared, err := m.PrepareDevicesForClaim(context.Background(), &ifNameIndex, claim)
@@ -728,7 +728,7 @@ var _ = Describe("Manager", Serial, func() {
 				// Missing req1
 			}
 
-			mockHost.EXPECT().BindDeviceDriver("0000:01:00.1", gomock.Any()).Return("", nil)
+			mockHost.EXPECT().BindPciDeviceDriver("0000:01:00.1", gomock.Any()).Return("", nil)
 
 			ifNameIndex := 0
 			prepared, err := m.prepareDevices(context.Background(), &ifNameIndex, claim, resultsConfig)
@@ -844,7 +844,7 @@ var _ = Describe("Manager", Serial, func() {
 				"req1": vfConfig,
 			}
 
-			mockHost.EXPECT().BindDeviceDriver("0000:01:00.1", vfConfig).Return("", nil)
+			mockHost.EXPECT().BindPciDeviceDriver("0000:01:00.1", vfConfig).Return("", nil)
 
 			ifNameIndex := 0
 			devices, err := m.prepareDevices(context.Background(), &ifNameIndex, claim, resultsConfig)
@@ -940,7 +940,7 @@ var _ = Describe("Manager", Serial, func() {
 				Pool:    "pool1",
 			}
 
-			mockHost.EXPECT().BindDeviceDriver("0000:01:00.1", config).Return("", nil)
+			mockHost.EXPECT().BindPciDeviceDriver("0000:01:00.1", config).Return("", nil)
 
 			ifNameIndex := 0
 			preparedDevice, err := m.applyConfigOnDevice(context.Background(), &ifNameIndex, claim, config, result)
@@ -983,9 +983,9 @@ var _ = Describe("Manager", Serial, func() {
 				Pool:    "pool1",
 			}
 
-			mockHost.EXPECT().BindDeviceDriver("0000:01:00.1", config).Return("ixgbevf", nil)
+			mockHost.EXPECT().BindPciDeviceDriver("0000:01:00.1", config).Return("ixgbevf", nil)
 			mockHost.EXPECT().GetVFIODeviceFile("0000:01:00.1").Return("", "", fmt.Errorf("vfio lookup failed"))
-			mockHost.EXPECT().RestoreDeviceDriver("0000:01:00.1", "ixgbevf").Return(nil)
+			mockHost.EXPECT().RestorePciDeviceDriver("0000:01:00.1", "ixgbevf").Return(nil)
 
 			ifNameIndex := 0
 			_, err := m.applyConfigOnDevice(context.Background(), &ifNameIndex, claim, config, result)
@@ -1415,7 +1415,7 @@ var _ = Describe("Manager", Serial, func() {
 			cfg := &configapi.VfConfig{NetAttachDefName: "nad1"} // should be ignored in MULTUS
 			ifIndex := 0
 			res := &resourceapi.DeviceRequestAllocationResult{Device: "devA", Pool: "pool1", Request: "req1"}
-			mockHost.EXPECT().BindDeviceDriver("0000:00:00.1", cfg).Return("", nil)
+			mockHost.EXPECT().BindPciDeviceDriver("0000:00:00.1", cfg).Return("", nil)
 
 			pd, err := s.applyConfigOnDevice(context.Background(), &ifIndex, claim, cfg, res)
 			Expect(err).ToNot(HaveOccurred())

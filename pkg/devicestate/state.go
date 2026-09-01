@@ -249,7 +249,7 @@ func (s *Manager) applyConfigOnDevice(ctx context.Context, ifNameIndex *int, cla
 		}
 	}
 	// Bind device to driver if specified in config
-	originalDriver, err := host.GetHelpers().BindDeviceDriver(pciAddress, config)
+	originalDriver, err := host.GetHelpers().BindPciDeviceDriver(pciAddress, config)
 	if err != nil {
 		return nil, fmt.Errorf("error binding device %s to driver: %w", pciAddress, err)
 	}
@@ -257,7 +257,7 @@ func (s *Manager) applyConfigOnDevice(ctx context.Context, ifNameIndex *int, cla
 		if config.Driver == "" {
 			return cause
 		}
-		if restoreErr := host.GetHelpers().RestoreDeviceDriver(pciAddress, originalDriver); restoreErr != nil {
+		if restoreErr := host.GetHelpers().RestorePciDeviceDriver(pciAddress, originalDriver); restoreErr != nil {
 			return fmt.Errorf("%w; additionally failed to restore original driver for device %s: %v", cause, pciAddress, restoreErr)
 		}
 		return cause
@@ -504,7 +504,7 @@ func (s *Manager) unprepareDevices(preparedDevices drasriovtypes.PreparedDevices
 		}
 		// Restore original driver if a driver change was made
 		if preparedDevice.Config.Driver != "" {
-			if err := host.GetHelpers().RestoreDeviceDriver(preparedDevice.PciAddress, preparedDevice.OriginalDriver); err != nil {
+			if err := host.GetHelpers().RestorePciDeviceDriver(preparedDevice.PciAddress, preparedDevice.OriginalDriver); err != nil {
 				logger.Error(err, "Failed to restore original driver for device", "device", preparedDevice.PciAddress, "originalDriver", preparedDevice.OriginalDriver)
 				return fmt.Errorf("failed to restore original driver for device %s: %w", preparedDevice.PciAddress, err)
 			}
