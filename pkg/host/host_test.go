@@ -420,7 +420,7 @@ var _ = Describe("Host", func() {
 				}
 				tearDown = fs.Use()
 
-				driver, err := h.GetDriverByBusAndDevice("0000:01:00.0")
+				driver, err := h.GetDriverByBusAndDevice(consts.PciBus, "0000:01:00.0")
 				Expect(err).NotTo(HaveOccurred())
 				Expect(driver).To(Equal("ixgbe"))
 			})
@@ -431,7 +431,7 @@ var _ = Describe("Host", func() {
 				}
 				tearDown = fs.Use()
 
-				driver, err := h.GetDriverByBusAndDevice("0000:01:00.0")
+				driver, err := h.GetDriverByBusAndDevice(consts.PciBus, "0000:01:00.0")
 				Expect(err).NotTo(HaveOccurred())
 				Expect(driver).To(BeEmpty())
 			})

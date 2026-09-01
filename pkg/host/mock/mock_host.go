@@ -42,18 +42,18 @@ func (m *MockInterface) EXPECT() *MockInterfaceMockRecorder {
 	return m.recorder
 }
 
-// BindDefaultDriver mocks base method.
-func (m *MockInterface) BindDefaultDriver(pciAddress string) error {
+// BindDefaultDriverByBusAndDevice mocks base method.
+func (m *MockInterface) BindDefaultDriverByBusAndDevice(bus, device string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BindDefaultDriver", pciAddress)
+	ret := m.ctrl.Call(m, "BindDefaultDriverByBusAndDevice", bus, device)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// BindDefaultDriver indicates an expected call of BindDefaultDriver.
-func (mr *MockInterfaceMockRecorder) BindDefaultDriver(pciAddress any) *gomock.Call {
+// BindDefaultDriverByBusAndDevice indicates an expected call of BindDefaultDriverByBusAndDevice.
+func (mr *MockInterfaceMockRecorder) BindDefaultDriverByBusAndDevice(bus, device any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BindDefaultDriver", reflect.TypeOf((*MockInterface)(nil).BindDefaultDriver), pciAddress)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BindDefaultDriverByBusAndDevice", reflect.TypeOf((*MockInterface)(nil).BindDefaultDriverByBusAndDevice), bus, device)
 }
 
 // BindDeviceDriver mocks base method.
@@ -72,17 +72,17 @@ func (mr *MockInterfaceMockRecorder) BindDeviceDriver(pciAddress, config any) *g
 }
 
 // BindDriverByBusAndDevice mocks base method.
-func (m *MockInterface) BindDriverByBusAndDevice(device, driver string) error {
+func (m *MockInterface) BindDriverByBusAndDevice(bus, device, driver string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BindDriverByBusAndDevice", device, driver)
+	ret := m.ctrl.Call(m, "BindDriverByBusAndDevice", bus, device, driver)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // BindDriverByBusAndDevice indicates an expected call of BindDriverByBusAndDevice.
-func (mr *MockInterfaceMockRecorder) BindDriverByBusAndDevice(device, driver any) *gomock.Call {
+func (mr *MockInterfaceMockRecorder) BindDriverByBusAndDevice(bus, device, driver any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BindDriverByBusAndDevice", reflect.TypeOf((*MockInterface)(nil).BindDriverByBusAndDevice), device, driver)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BindDriverByBusAndDevice", reflect.TypeOf((*MockInterface)(nil).BindDriverByBusAndDevice), bus, device, driver)
 }
 
 // EnsureDpdkModuleLoaded mocks base method.
@@ -114,18 +114,18 @@ func (mr *MockInterfaceMockRecorder) EnsureVhostModulesLoaded() *gomock.Call {
 }
 
 // GetDriverByBusAndDevice mocks base method.
-func (m *MockInterface) GetDriverByBusAndDevice(device string) (string, error) {
+func (m *MockInterface) GetDriverByBusAndDevice(bus, device string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDriverByBusAndDevice", device)
+	ret := m.ctrl.Call(m, "GetDriverByBusAndDevice", bus, device)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetDriverByBusAndDevice indicates an expected call of GetDriverByBusAndDevice.
-func (mr *MockInterfaceMockRecorder) GetDriverByBusAndDevice(device any) *gomock.Call {
+func (mr *MockInterfaceMockRecorder) GetDriverByBusAndDevice(bus, device any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDriverByBusAndDevice", reflect.TypeOf((*MockInterface)(nil).GetDriverByBusAndDevice), device)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDriverByBusAndDevice", reflect.TypeOf((*MockInterface)(nil).GetDriverByBusAndDevice), bus, device)
 }
 
 // GetLinkType mocks base method.
@@ -361,17 +361,17 @@ func (mr *MockInterfaceMockRecorder) TryGetPFInterfaceName(pciAddr any) *gomock.
 }
 
 // UnbindDriverByBusAndDevice mocks base method.
-func (m *MockInterface) UnbindDriverByBusAndDevice(device string) error {
+func (m *MockInterface) UnbindDriverByBusAndDevice(bus, device string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UnbindDriverByBusAndDevice", device)
+	ret := m.ctrl.Call(m, "UnbindDriverByBusAndDevice", bus, device)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UnbindDriverByBusAndDevice indicates an expected call of UnbindDriverByBusAndDevice.
-func (mr *MockInterfaceMockRecorder) UnbindDriverByBusAndDevice(device any) *gomock.Call {
+func (mr *MockInterfaceMockRecorder) UnbindDriverByBusAndDevice(bus, device any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnbindDriverByBusAndDevice", reflect.TypeOf((*MockInterface)(nil).UnbindDriverByBusAndDevice), device)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnbindDriverByBusAndDevice", reflect.TypeOf((*MockInterface)(nil).UnbindDriverByBusAndDevice), bus, device)
 }
 
 // VerifyRDMACapability mocks base method.

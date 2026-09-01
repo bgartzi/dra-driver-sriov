@@ -40,24 +40,34 @@ func buildSysPath(path string) string {
 	return path
 }
 
-// buildSysPathByBus constructs a device path under /sys/bus/${bus}/devices
-func buildSysPathByBusAndDevice(bus, device, subPath string) string {
-	basePath := filepath.Join(consts.SysBus, bus, consts.BusDevices, device, subPath)
+// buildSysPathByBus constructs a device path under /sys/bus/${bus}/
+func buildSysPathByBus(bus, subPath string) string {
+	basePath := filepath.Join(consts.SysBus, bus, subPath)
 	return buildSysPath(basePath)
 }
 
-// buildSysBusPciPath constructs a PCI device path under /sys/bus/pci/devices
+// buildSysPathByBusAndDevice constructs a device path under
+// /sys/bus/${bus}/devices/
+func buildSysPathByBusAndDevice(bus, device, subPath string) string {
+	basePath := buildSysPathByBus(bus, consts.BusDevices)
+	return filepath.Join(basePath, device, subPath)
+}
+
+// buildSysBusPciPath constructs a PCI device path under
+// /sys/bus/pci/devices/
 func buildSysBusPciPath(pciAddress, subPath string) string {
 	return buildSysPathByBusAndDevice(consts.PciBus, pciAddress, subPath)
 }
 
-// buildSysPathByBus constructs a device path under /sys/bus/${bus}/drivers
+// buildSysPathByBusAndDriver constructs a device path under
+// /sys/bus/${bus}/drivers/
 func buildSysPathByBusAndDriver(bus, driver, subPath string) string {
-	basePath := filepath.Join(consts.SysBus, bus, consts.BusDrivers, driver, subPath)
-	return buildSysPath(basePath)
+	basePath := buildSysPathByBus(bus, consts.BusDrivers)
+	return filepath.Join(basePath, driver, subPath)
 }
 
-// buildSysBusPciDriverPath constructs a driver path under /sys/bus/pci/drivers
+// buildSysBusPciDriverPath constructs a driver path under
+// /sys/bus/pci/drivers/
 func buildSysBusPciDriverPath(driver, subPath string) string {
 	return buildSysPathByBusAndDriver(consts.PciBus, driver, subPath)
 }
@@ -105,10 +115,10 @@ type Interface interface {
 	RestoreDeviceDriver(pciAddress string, originalDriver string) error
 
 	// Low-level driver operations
-	GetDriverByBusAndDevice(device string) (string, error)
-	BindDriverByBusAndDevice(device, driver string) error
-	UnbindDriverByBusAndDevice(device string) error
-	BindDefaultDriver(pciAddress string) error
+	GetDriverByBusAndDevice(bus, device string) (string, error)
+	BindDriverByBusAndDevice(bus, device, driver string) error
+	UnbindDriverByBusAndDevice(bus, device string) error
+	BindDefaultDriverByBusAndDevice(bus, device string) error
 
 	// Driver utility functions
 	IsDpdkDriver(driver string) bool
@@ -377,67 +387,70 @@ func (h *Host) GetPCIeRoot(pciAddress string) (string, error) {
 // - If config.Driver == "", nothing is done
 // - If config.Driver == "default", binds device to default driver
 // - Otherwise, binds device to the specified driver
-func (h *Host) BindDeviceDriver(pciAddress string, config *configapi.VfConfig) (string, error) {
+func (h *Host) BindDeviceDriver(device string, config *configapi.VfConfig) (string, error) {
+	bus := consts.PciBus
+
 	if config.Driver == "" {
-		h.log.V(2).Info("BindDeviceDriver(): no driver specified, skipping", "device", pciAddress)
+		h.log.V(2).Info("BindDeviceDriver(): no driver specified, skipping", "bus", bus, "device", device)
 		return "", nil
 	}
 
 	// Get current driver before making changes
-	currentDriver, err := h.GetDriverByBusAndDevice(pciAddress)
+	currentDriver, err := h.GetDriverByBusAndDevice(bus, device)
 	if err != nil {
-		return "", fmt.Errorf("failed to get current driver for device %s: %w", pciAddress, err)
+		return "", fmt.Errorf("failed to get current driver for device %s/%s: %w", bus, device, err)
 	}
 
 	if config.Driver == "default" {
-		h.log.V(2).Info("BindDeviceDriver(): binding device to default driver", "device", pciAddress)
-		if err := h.BindDefaultDriver(pciAddress); err != nil {
-			return "", fmt.Errorf("failed to bind device %s to default driver: %w", pciAddress, err)
+		h.log.V(2).Info("BindDeviceDriver(): binding device to default driver", "bus", bus, "device", device)
+		if err := h.BindDefaultDriverByBusAndDevice(bus, device); err != nil {
+			return "", fmt.Errorf("failed to bind device %s/%s to default driver: %w", bus, device, err)
 		}
 		return currentDriver, nil
 	}
 
-	h.log.V(2).Info("BindDeviceDriver(): binding device to driver", "device", pciAddress, "driver", config.Driver)
-	if err := h.BindDriverByBusAndDevice(pciAddress, config.Driver); err != nil {
-		return "", fmt.Errorf("failed to bind device %s to driver %s: %w", pciAddress, config.Driver, err)
+	h.log.V(2).Info("BindDeviceDriver(): binding device to driver", "bus", bus, "device", device, "driver", config.Driver)
+	if err := h.BindDriverByBusAndDevice(bus, device, config.Driver); err != nil {
+		return "", fmt.Errorf("failed to bind device %s/%s to driver %s: %w", bus, device, config.Driver, err)
 	}
 	return currentDriver, nil
 }
 
 // RestoreDeviceDriver restores a device to its original driver
-func (h *Host) RestoreDeviceDriver(pciAddress string, originalDriver string) error {
+func (h *Host) RestoreDeviceDriver(device, originalDriver string) error {
+	bus := consts.PciBus
 	if originalDriver == "" {
-		h.log.V(2).Info("RestoreDeviceDriver(): no original driver, binding to default", "device", pciAddress)
-		return h.BindDefaultDriver(pciAddress)
+		h.log.V(2).Info("RestoreDeviceDriver(): no original driver, binding to default", "bus", bus, "device", device)
+		return h.BindDefaultDriverByBusAndDevice(bus, device)
 	}
 
-	h.log.V(2).Info("RestoreDeviceDriver(): restoring device to original driver", "device", pciAddress, "driver", originalDriver)
-	return h.BindDriverByBusAndDevice(pciAddress, originalDriver)
+	h.log.V(2).Info("RestoreDeviceDriver(): restoring device to original driver", "bus", bus, "device", device, "driver", originalDriver)
+	return h.BindDriverByBusAndDevice(bus, device, originalDriver)
 }
 
-// BindDefaultDriver binds a device to its default driver
-func (h *Host) BindDefaultDriver(pciAddress string) error {
-	h.log.V(2).Info("BindDefaultDriver(): binding device to default driver", "device", pciAddress)
+// BindDefaultDriverByBusAndDevice binds a device to its default driver
+func (h *Host) BindDefaultDriverByBusAndDevice(bus, device string) error {
+	h.log.V(2).Info("BindDefaultDriverByBusAndDevice(): binding device to default driver", "bus", bus, "device", device)
 
-	curDriver, err := h.GetDriverByBusAndDevice(pciAddress)
+	curDriver, err := h.GetDriverByBusAndDevice(bus, device)
 	if err != nil {
 		return err
 	}
 	if curDriver != "" {
 		// If already bound to a non-DPDK driver, assume it's the default
 		if !h.IsDpdkDriver(curDriver) {
-			h.log.V(2).Info("BindDefaultDriver(): device already bound to default driver",
-				"device", pciAddress, "driver", curDriver)
+			h.log.V(2).Info("BindDefaultDriverByBusAndDevice(): device already bound to default driver",
+				"bus", bus, "device", device, "driver", curDriver)
 			return nil
 		}
-		if err := h.UnbindDriverByBusAndDevice(pciAddress); err != nil {
+		if err := h.UnbindDriverByBusAndDevice(bus, device); err != nil {
 			return err
 		}
 	}
-	if err := h.setDriverOverride(pciAddress, ""); err != nil {
+	if err := h.setDriverOverride(bus, device, ""); err != nil {
 		return err
 	}
-	if err := h.probeDriver(pciAddress); err != nil {
+	if err := h.probeDriver(bus, device); err != nil {
 		return err
 	}
 	return nil
@@ -446,86 +459,86 @@ func (h *Host) BindDefaultDriver(pciAddress string) error {
 // Low-level Driver Operations
 
 // BindDriverByBusAndDevice binds device to the provided driver
-func (h *Host) BindDriverByBusAndDevice(device, driver string) error {
+func (h *Host) BindDriverByBusAndDevice(bus, device, driver string) error {
 	h.log.V(2).Info("BindDriverByBusAndDevice(): bind device to driver",
-		"device", device, "driver", driver)
+		"bus", bus, "device", device, "driver", driver)
 
 	// Ensure DPDK kernel module is loaded before binding
 	if err := h.EnsureDpdkModuleLoaded(driver); err != nil {
 		return fmt.Errorf("failed to ensure DPDK module is loaded for driver %s: %w", driver, err)
 	}
 
-	curDriver, err := h.GetDriverByBusAndDevice(device)
+	curDriver, err := h.GetDriverByBusAndDevice(bus, device)
 	if err != nil {
 		return err
 	}
 	if curDriver != "" {
 		if curDriver == driver {
 			h.log.V(2).Info("BindDriverByBusAndDevice(): device already bound to driver",
-				"device", device, "driver", driver)
+				"bus", bus, "device", device, "driver", driver)
 			return nil
 		}
-		if err := h.UnbindDriverByBusAndDevice(device); err != nil {
+		if err := h.UnbindDriverByBusAndDevice(bus, device); err != nil {
 			return err
 		}
 	}
-	if err := h.setDriverOverride(device, driver); err != nil {
+	if err := h.setDriverOverride(bus, device, driver); err != nil {
 		return err
 	}
-	if err := h.bindDriver(device, driver); err != nil {
+	if err := h.bindDriver(bus, device, driver); err != nil {
 		return err
 	}
-	return h.setDriverOverride(device, "")
+	return h.setDriverOverride(bus, device, "")
 }
 
 // UnbindDriverByBusAndDevice unbinds device from its current driver
-func (h *Host) UnbindDriverByBusAndDevice(device string) error {
-	h.log.V(2).Info("UnbindDriverByBusAndDevice(): unbind device driver for device", "device", device)
-	driver, err := h.GetDriverByBusAndDevice(device)
+func (h *Host) UnbindDriverByBusAndDevice(bus, device string) error {
+	h.log.V(2).Info("UnbindDriverByBusAndDevice(): unbind device driver for device", "bus", bus, "device", device)
+	driver, err := h.GetDriverByBusAndDevice(bus, device)
 	if err != nil {
 		return err
 	}
 	if driver == "" {
-		h.log.V(2).Info("UnbindDriverByBusAndDevice(): device has no driver", "device", device)
+		h.log.V(2).Info("UnbindDriverByBusAndDevice(): device has no driver", "bus", bus, "device", device)
 		return nil
 	}
-	return h.unbindDriver(device, driver)
+	return h.unbindDriver(bus, device, driver)
 }
 
 // GetDriverByBusAndDevice returns driver for device on the bus
-func (h *Host) GetDriverByBusAndDevice(device string) (string, error) {
-	driverLink := buildSysBusPciPath(device, "driver")
+func (h *Host) GetDriverByBusAndDevice(bus, device string) (string, error) {
+	driverLink := buildSysPathByBusAndDevice(bus, device, "driver")
 	driverInfo, err := os.Readlink(driverLink)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			h.log.V(2).Info("GetDriverByBusAndDevice(): driver path for device not exist", "device", device)
+			h.log.V(2).Info("GetDriverByBusAndDevice(): driver path for device not exist", "bus", bus, "device", device)
 			return "", nil
 		}
-		h.log.Error(err, "GetDriverByBusAndDevice(): error getting driver info for device", "device", device)
+		h.log.Error(err, "GetDriverByBusAndDevice(): error getting driver info for device", "bus", bus, "device", device)
 		return "", err
 	}
-	h.log.V(2).Info("GetDriverByBusAndDevice(): driver for device", "device", device, "driver", driverInfo)
+	h.log.V(2).Info("GetDriverByBusAndDevice(): driver for device", "bus", bus, "device", device, "driver", driverInfo)
 	return filepath.Base(driverInfo), nil
 }
 
 // Private helper methods
 
 // bindDriver binds device to the provided driver
-func (h *Host) bindDriver(device, driver string) error {
-	h.log.V(2).Info("bindDriver(): bind to driver", "device", device, "driver", driver)
-	bindPath := buildSysBusPciDriverPath(driver, "bind")
+func (h *Host) bindDriver(bus, device, driver string) error {
+	h.log.V(2).Info("bindDriver(): bind to driver", "bus", bus, "device", device, "driver", driver)
+	bindPath := buildSysPathByBusAndDriver(bus, driver, "bind")
 	err := os.WriteFile(bindPath, []byte(device), os.ModeAppend)
 	if err != nil {
-		h.log.Error(err, "bindDriver(): failed to bind driver", "device", device, "driver", driver)
+		h.log.Error(err, "bindDriver(): failed to bind driver", "bus", bus, "device", device, "driver", driver)
 		return err
 	}
 	return nil
 }
 
 // unbindDriver unbinds device from the driver
-func (h *Host) unbindDriver(device, driver string) error {
-	h.log.V(2).Info("unbindDriver(): unbind from driver", "device", device, "driver", driver)
-	unbindPath := buildSysBusPciDriverPath(driver, "unbind")
+func (h *Host) unbindDriver(bus, device, driver string) error {
+	h.log.V(2).Info("unbindDriver(): unbind from driver", "bus", bus, "device", device, "driver", driver)
+	unbindPath := buildSysPathByBusAndDriver(bus, driver, "unbind")
 	err := os.WriteFile(unbindPath, []byte(device), os.ModeAppend)
 	if err != nil {
 		h.log.Error(err, "unbindDriver(): failed to unbind driver", "device", device, "driver", driver)
@@ -535,12 +548,12 @@ func (h *Host) unbindDriver(device, driver string) error {
 }
 
 // probeDriver probes driver for device on the bus
-func (h *Host) probeDriver(device string) error {
-	h.log.V(2).Info("probeDriver(): drivers probe", "device", device)
-	probePath := buildSysPath("/sys/bus/pci/drivers_probe")
+func (h *Host) probeDriver(bus, device string) error {
+	h.log.V(2).Info("probeDriver(): drivers probe", "bus", bus, "device", device)
+	probePath := buildSysPathByBus(bus, "drivers_probe")
 	err := os.WriteFile(probePath, []byte(device), os.ModeAppend)
 	if err != nil {
-		h.log.Error(err, "probeDriver(): failed to trigger driver probe", "device", device)
+		h.log.Error(err, "probeDriver(): failed to trigger driver probe", "bus", bus, "device", device)
 		return err
 	}
 	return nil
@@ -549,27 +562,27 @@ func (h *Host) probeDriver(device string) error {
 // setDriverOverride sets driver override for the bus/device,
 // resets override if override arg is "",
 // if device doesn't support overriding (has no driver_override path), does nothing
-func (h *Host) setDriverOverride(device, override string) error {
-	driverOverridePath := buildSysBusPciPath(device, "driver_override")
+func (h *Host) setDriverOverride(bus, device, override string) error {
+	driverOverridePath := buildSysPathByBusAndDevice(bus, device, "driver_override")
 	if _, err := os.Stat(driverOverridePath); err != nil {
 		if os.IsNotExist(err) {
-			h.log.V(2).Info("setDriverOverride(): device doesn't support driver override, skip", "device", device)
+			h.log.V(2).Info("setDriverOverride(): device doesn't support driver override, skip", "bus", bus, "device", device)
 			return nil
 		}
 		return err
 	}
 	var overrideData []byte
 	if override != "" {
-		h.log.V(2).Info("setDriverOverride(): configure driver override for device", "device", device, "driver", override)
+		h.log.V(2).Info("setDriverOverride(): configure driver override for device", "bus", bus, "device", device, "driver", override)
 		overrideData = []byte(override)
 	} else {
-		h.log.V(2).Info("setDriverOverride(): reset driver override for device", "device", device)
+		h.log.V(2).Info("setDriverOverride(): reset driver override for device", "bus", bus, "device", device)
 		overrideData = []byte("\x00")
 	}
 	err := os.WriteFile(driverOverridePath, overrideData, os.ModeAppend)
 	if err != nil {
 		h.log.Error(err, "setDriverOverride(): fail to write driver_override for device",
-			"device", device, "driver", override)
+			"bus", bus, "device", device, "driver", override)
 		return err
 	}
 	return nil
