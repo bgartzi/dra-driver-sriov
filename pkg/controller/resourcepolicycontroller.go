@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"sort"
+	"strconv"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -326,6 +327,21 @@ func (r *SriovResourcePolicyReconciler) deviceMatchesFilter(device resourceapi.D
 	// TODO: Implement driver checking if needed
 	if len(filter.Drivers) > 0 {
 		r.log.V(3).Info("Driver filtering not yet implemented", "deviceName", device.Name)
+	}
+
+	if filter.VirtioFeatures != 0 {
+		virtioFeatures, exists := device.Attributes[consts.AttributeVirtioFeatures]
+		if !exists {
+			return false
+		}
+		supportedVirtioFeatures, err := strconv.ParseUint(*virtioFeatures.StringValue, 16, 64)
+		if err != nil {
+			r.log.V(3).Error(err, "deviceName", device.Name, "attribute", consts.AttributeVirtioFeatures)
+		}
+
+		if (supportedVirtioFeatures & filter.VirtioFeatures) != filter.VirtioFeatures {
+			return false
+		}
 	}
 
 	return true

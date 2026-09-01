@@ -134,6 +134,13 @@ spec:
                             items:
                               type: string
                             type: array
+                          virtioFeatures:
+                            description: |-
+                              Minimum set of virtio features to be considered. Devices will be
+                              considered if they support these and more. They will be dropped
+                              if they don't support all.
+                            format: int64
+                            type: integer
                         type: object
                       type: array
                   type: object

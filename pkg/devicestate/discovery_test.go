@@ -79,7 +79,9 @@ var _ = Describe("DiscoverSriovDevices", func() {
 			mockHost.EXPECT().GetLinkType("0000:01:00.0").Return(consts.LinkTypeEthernet, nil)
 			mockHost.EXPECT().GetVFList("0000:01:00.0").Return(vfList, nil)
 			mockHost.EXPECT().VerifyRDMACapability("0000:01:00.1").Return(false)
+			mockHost.EXPECT().GetVdpaMgmtDevInfo("0000:01:00.1").Return(nil, fmt.Errorf("no such device"))
 			mockHost.EXPECT().VerifyRDMACapability("0000:01:00.2").Return(false)
+			mockHost.EXPECT().GetVdpaMgmtDevInfo("0000:01:00.2").Return(nil, fmt.Errorf("no such device"))
 
 			devices, err := DiscoverSriovDevices()
 			Expect(err).NotTo(HaveOccurred())
@@ -154,8 +156,10 @@ var _ = Describe("DiscoverSriovDevices", func() {
 
 			mockHost.EXPECT().GetVFList("0000:01:00.0").Return(vfList1, nil)
 			mockHost.EXPECT().VerifyRDMACapability("0000:01:00.1").Return(false)
+			mockHost.EXPECT().GetVdpaMgmtDevInfo("0000:01:00.1").Return(nil, fmt.Errorf("no such device"))
 			mockHost.EXPECT().GetVFList("0000:02:00.0").Return(vfList2, nil)
 			mockHost.EXPECT().VerifyRDMACapability("0000:02:00.1").Return(false)
+			mockHost.EXPECT().GetVdpaMgmtDevInfo("0000:02:00.1").Return(nil, fmt.Errorf("no such device"))
 
 			devices, err := DiscoverSriovDevices()
 			Expect(err).NotTo(HaveOccurred())
@@ -209,6 +213,7 @@ var _ = Describe("DiscoverSriovDevices", func() {
 			mockHost.EXPECT().GetLinkType("0000:01:00.0").Return(consts.LinkTypeEthernet, nil)
 			mockHost.EXPECT().GetVFList("0000:01:00.0").Return(vfList, nil)
 			mockHost.EXPECT().VerifyRDMACapability("0000:01:00.1").Return(false)
+			mockHost.EXPECT().GetVdpaMgmtDevInfo("0000:01:00.1").Return(nil, fmt.Errorf("no such device"))
 
 			devices, err := DiscoverSriovDevices()
 			Expect(err).NotTo(HaveOccurred())
@@ -244,6 +249,7 @@ var _ = Describe("DiscoverSriovDevices", func() {
 			mockHost.EXPECT().GetLinkType("0000:01:00.0").Return("", fmt.Errorf("lookup failed"))
 			mockHost.EXPECT().GetVFList("0000:01:00.0").Return(vfList, nil)
 			mockHost.EXPECT().VerifyRDMACapability("0000:01:00.1").Return(false)
+			mockHost.EXPECT().GetVdpaMgmtDevInfo("0000:01:00.1").Return(nil, fmt.Errorf("no such device"))
 
 			devices, err := DiscoverSriovDevices()
 			Expect(err).NotTo(HaveOccurred())
@@ -311,9 +317,11 @@ var _ = Describe("DiscoverSriovDevices", func() {
 
 				// First VF is RDMA-capable
 				mockHost.EXPECT().VerifyRDMACapability("0000:01:00.1").Return(true)
+				mockHost.EXPECT().GetVdpaMgmtDevInfo("0000:01:00.1").Return(nil, fmt.Errorf("no such device"))
 
 				// Second VF is not RDMA-capable
 				mockHost.EXPECT().VerifyRDMACapability("0000:01:00.2").Return(false)
+				mockHost.EXPECT().GetVdpaMgmtDevInfo("0000:01:00.2").Return(nil, fmt.Errorf("no such device"))
 
 				devices, err := DiscoverSriovDevices()
 				Expect(err).NotTo(HaveOccurred())
@@ -348,6 +356,7 @@ var _ = Describe("DiscoverSriovDevices", func() {
 				mockHost.EXPECT().GetVFList("0000:01:00.0").Return(vfList, nil)
 				// RDMA capability check fails (returns false)
 				mockHost.EXPECT().VerifyRDMACapability("0000:01:00.1").Return(false)
+				mockHost.EXPECT().GetVdpaMgmtDevInfo("0000:01:00.1").Return(nil, fmt.Errorf("no such device"))
 
 				devices, err := DiscoverSriovDevices()
 				Expect(err).NotTo(HaveOccurred())
@@ -421,6 +430,7 @@ var _ = Describe("DiscoverSriovDevices", func() {
 			mockHost.EXPECT().GetLinkType("0000:01:00.0").Return(consts.LinkTypeEthernet, nil)
 			mockHost.EXPECT().GetVFList("0000:01:00.0").Return(vfList, nil)
 			mockHost.EXPECT().VerifyRDMACapability("0000:01:00.1").Return(false)
+			mockHost.EXPECT().GetVdpaMgmtDevInfo("0000:01:00.1").Return(nil, fmt.Errorf("no such device"))
 
 			// Second device (VF) - should be skipped
 			mockHost.EXPECT().IsSriovVF("0000:01:00.1").Return(true)
@@ -551,6 +561,7 @@ var _ = Describe("DiscoverSriovDevices", func() {
 			mockHost.EXPECT().GetLinkType("0000:01:00.0").Return(consts.LinkTypeEthernet, nil)
 			mockHost.EXPECT().GetVFList("0000:01:00.0").Return(vfList, nil)
 			mockHost.EXPECT().VerifyRDMACapability("0000:af:10.7").Return(false)
+			mockHost.EXPECT().GetVdpaMgmtDevInfo("0000:af:10.7").Return(nil, fmt.Errorf("no such device"))
 
 			devices, err := DiscoverSriovDevices()
 			Expect(err).NotTo(HaveOccurred())

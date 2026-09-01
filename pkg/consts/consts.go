@@ -41,6 +41,9 @@ const (
 	AttributeLinkType           = DriverName + "/linkType"
 	AttributeRDMACapable        = DriverName + "/rdmaCapable"
 	AttributeInterfaceName      = DriverName + "/interfaceName"
+	AttributeVDPACapable        = DriverName + "/vdpaCapable"
+	AttributeVirtioFeatures     = DriverName + "/virtioFeatures"
+	AttributeMaxSupportedVQs    = DriverName + "/maxSupportedVQs"
 	AttributeMultusDeviceID     = MultusAttributePrefix + "/deviceID"
 	AttributeMultusResourceName = MultusAttributePrefix + "/resourceName"
 	// Use upstream Kubernetes standard attribute prefix for pciAddress

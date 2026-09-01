@@ -65,6 +65,10 @@ type ResourceFilter struct {
 	// +kubebuilder:validation:Enum=eth;ib;ethernet;infiniband
 	// NIC Link Type. Accepted values: "eth", "ib", "ethernet", "infiniband".
 	LinkType string `json:"linkType,omitempty"`
+	// Minimum set of virtio features to be considered. Devices will be
+	// considered if they support these and more. They will be dropped
+	// if they don't support all.
+	VirtioFeatures uint64 `json:"virtioFeatures,omitempty"`
 }
 
 // +genclient

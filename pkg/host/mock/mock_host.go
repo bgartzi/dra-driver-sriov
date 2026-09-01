@@ -261,6 +261,21 @@ func (mr *MockInterfaceMockRecorder) GetVFList(pfPciAddress any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVFList", reflect.TypeOf((*MockInterface)(nil).GetVFList), pfPciAddress)
 }
 
+// GetVdpaMgmtDevInfo mocks base method.
+func (m *MockInterface) GetVdpaMgmtDevInfo(pciAddr string) (*host.VdpaMgmtDevInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVdpaMgmtDevInfo", pciAddr)
+	ret0, _ := ret[0].(*host.VdpaMgmtDevInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVdpaMgmtDevInfo indicates an expected call of GetVdpaMgmtDevInfo.
+func (mr *MockInterfaceMockRecorder) GetVdpaMgmtDevInfo(pciAddr any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVdpaMgmtDevInfo", reflect.TypeOf((*MockInterface)(nil).GetVdpaMgmtDevInfo), pciAddr)
+}
+
 // IsDpdkDriver mocks base method.
 func (m *MockInterface) IsDpdkDriver(driver string) bool {
 	m.ctrl.T.Helper()

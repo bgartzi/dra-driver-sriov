@@ -13,6 +13,7 @@ import (
 
 	"github.com/jaypipes/ghw"
 	"github.com/k8snetworkplumbingwg/sriovnet"
+	"github.com/vishvananda/netlink"
 	"k8s.io/dynamic-resource-allocation/deviceattribute"
 	"k8s.io/klog/v2"
 
@@ -87,6 +88,11 @@ type VFInfo struct {
 	DeviceID   string
 }
 
+type VdpaMgmtDevInfo struct {
+	VirtioFeatures uint64
+	MaxVQs         uint32
+}
+
 // Interface defines the unified interface for all host system operations.
 // This interface allows for easy mocking in unit tests by implementing mock versions
 // of all the host-related methods.
@@ -137,6 +143,9 @@ type Interface interface {
 	GetRDMADevicesForPCI(pciAddr string) []string
 	VerifyRDMACapability(pciAddr string) bool
 	GetRDMACharDevices(rdmaDeviceName string) ([]string, error)
+
+	// VDPA device functions
+	GetVdpaMgmtDevInfo(pciAddr string) (*VdpaMgmtDevInfo, error)
 }
 
 // Host provides unified host system functionality for SR-IOV, PCI operations, and driver management
@@ -837,4 +846,13 @@ func (h *Host) GetRDMACharDevices(rdmaDeviceName string) ([]string, error) {
 	h.log.Info("GetRDMACharDevices(): found character devices",
 		"rdmaDevice", rdmaDeviceName, "charDevices", charDevices)
 	return charDevices, nil
+}
+
+func (h *Host) GetVdpaMgmtDevInfo(pciAddr string) (*VdpaMgmtDevInfo, error) {
+	mgmtDev, err := netlink.VDPAGetMGMTDevByBusAndName("pci", pciAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	return &VdpaMgmtDevInfo{VirtioFeatures: mgmtDev.SupportedFeatures, MaxVQs: mgmtDev.MaxVQS}, nil
 }

@@ -151,6 +151,15 @@ func DiscoverSriovDevices() (types.AllocatableDevices, error) {
 			// Check RDMA capability for this VF
 			rdmaCapable := host.GetHelpers().VerifyRDMACapability(vfInfo.PciAddress)
 
+			mgmtDev, err := host.GetHelpers().GetVdpaMgmtDevInfo(vfInfo.PciAddress)
+			if err != nil {
+				logger.V(2).Info("can not fetch vdpa capabilities for VF device",
+					"device", vfInfo.PciAddress,
+					err,
+				)
+			}
+			vdpaCapable := mgmtDev != nil
+
 			logger.V(2).Info("Adding VF device to resource list",
 				"deviceName", deviceName,
 				"vfAddress", vfInfo.PciAddress,
@@ -208,6 +217,18 @@ func DiscoverSriovDevices() (types.AllocatableDevices, error) {
 				consts.AttributeNUMANode: {
 					IntValue: numaNodeIntPtr,
 				},
+				consts.AttributeVDPACapable: {
+					BoolValue: ptr.To(vdpaCapable),
+				},
+			}
+
+			if vdpaCapable {
+				attributes[consts.AttributeVirtioFeatures] = resourceapi.DeviceAttribute{
+					StringValue: ptr.To(strconv.FormatUint(mgmtDev.VirtioFeatures, 16)),
+				}
+				attributes[consts.AttributeMaxSupportedVQs] = resourceapi.DeviceAttribute{
+					StringValue: ptr.To(strconv.FormatUint(uint64(mgmtDev.MaxVQs), 10)),
+				}
 			}
 
 			resourceList[deviceName] = resourceapi.Device{

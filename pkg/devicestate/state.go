@@ -56,6 +56,11 @@ func NewManager(config *drasriovtypes.Config, cdi *cdi.Handler, deviceInfoStore 
 		return nil, fmt.Errorf("cdi handler must not be nil")
 	}
 
+	err := host.GetHelpers().EnsureVdpaModuleIsLoaded()
+	if err != nil {
+		return nil, err
+	}
+
 	configurationMode, err := normalizeConfigurationMode(config.Flags.ConfigurationMode)
 	if err != nil {
 		return nil, err
