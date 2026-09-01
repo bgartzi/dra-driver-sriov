@@ -727,59 +727,20 @@ func (h *Host) EnsureDpdkModuleLoaded(driver string) error {
 		return fmt.Errorf("unknown DPDK driver: %s", driver)
 	}
 
-	// Check which modules need to be loaded
-	var modulesToLoad []string
-	for _, moduleName := range modulesNames {
-		if h.IsKernelModuleLoaded(moduleName) {
-			h.log.V(2).Info("EnsureDpdkModuleLoaded(): kernel module already loaded", "driver", driver, "module", moduleName)
-		} else {
-			modulesToLoad = append(modulesToLoad, moduleName)
-		}
-	}
-
-	// If all modules are already loaded, return early
-	if len(modulesToLoad) == 0 {
-		h.log.V(2).Info("EnsureDpdkModuleLoaded(): all required modules already loaded", "driver", driver)
-		return nil
-	}
-
-	// Load missing modules
-	var errors []error
-	for _, moduleName := range modulesToLoad {
-		h.log.Info("EnsureDpdkModuleLoaded(): loading kernel module for DPDK driver", "driver", driver, "module", moduleName)
-		if err := h.LoadKernelModule(moduleName); err != nil {
-			h.log.Error(err, "EnsureDpdkModuleLoaded(): failed to load module", "driver", driver, "module", moduleName)
-			errors = append(errors, fmt.Errorf("failed to load module %s: %w", moduleName, err))
-			continue
-		}
-
-		// Verify module was loaded successfully
-		if !h.IsKernelModuleLoaded(moduleName) {
-			err := fmt.Errorf("module %s was not loaded after LoadKernelModule call", moduleName)
-			h.log.Error(err, "EnsureDpdkModuleLoaded(): module verification failed", "driver", driver, "module", moduleName)
-			errors = append(errors, err)
-		} else {
-			h.log.Info("EnsureDpdkModuleLoaded(): successfully loaded kernel module", "driver", driver, "module", moduleName)
-		}
-	}
-
-	// If we encountered any errors, return them
-	if len(errors) > 0 {
-		return fmt.Errorf("failed to load %d out of %d required kernel modules for DPDK driver %s: %v", len(errors), len(modulesToLoad), driver, errors)
-	}
-	return nil
+	return h.ensureModulesLoaded("EnsureDpdkModulesLoaded", modulesNames)
 }
 
 // EnsureVhostModulesLoaded ensures that the tun and vhost_net kernel modules are loaded
 func (h *Host) EnsureVhostModulesLoaded() error {
-	// Modules required for vhost functionality
-	modulesNames := []string{"tun", "vhost_net"}
+	return h.ensureModulesLoaded("EnsureVhostModulesLoaded", []string{"tun", "vhost_net"})
+}
 
+func (h *Host) ensureModulesLoaded(target string, modulesNames []string) error {
 	// Check which modules need to be loaded
 	var modulesToLoad []string
 	for _, moduleName := range modulesNames {
 		if h.IsKernelModuleLoaded(moduleName) {
-			h.log.V(2).Info("EnsureVhostModulesLoaded(): kernel module already loaded", "module", moduleName)
+			h.log.V(2).Info(target, "kernel module already loaded", "module", moduleName)
 		} else {
 			modulesToLoad = append(modulesToLoad, moduleName)
 		}
@@ -787,16 +748,16 @@ func (h *Host) EnsureVhostModulesLoaded() error {
 
 	// If all modules are already loaded, return early
 	if len(modulesToLoad) == 0 {
-		h.log.V(2).Info("EnsureVhostModulesLoaded(): all required vhost modules already loaded")
+		h.log.V(2).Info(target, "all required modules were loaded")
 		return nil
 	}
 
 	// Load missing modules
 	var errors []error
 	for _, moduleName := range modulesToLoad {
-		h.log.Info("EnsureVhostModulesLoaded(): loading kernel module for vhost functionality", "module", moduleName)
+		h.log.Info(target, "loading kernel module", "module", moduleName)
 		if err := h.LoadKernelModule(moduleName); err != nil {
-			h.log.Error(err, "EnsureVhostModulesLoaded(): failed to load module", "module", moduleName)
+			h.log.Error(err, target, "failed to load module", "module", moduleName)
 			errors = append(errors, fmt.Errorf("failed to load module %s: %w", moduleName, err))
 			continue
 		}
@@ -804,16 +765,16 @@ func (h *Host) EnsureVhostModulesLoaded() error {
 		// Verify module was loaded successfully
 		if !h.IsKernelModuleLoaded(moduleName) {
 			err := fmt.Errorf("module %s was not loaded after LoadKernelModule call", moduleName)
-			h.log.Error(err, "EnsureVhostModulesLoaded(): module verification failed", "module", moduleName)
+			h.log.Error(err, target, "module verification failed", "module", moduleName)
 			errors = append(errors, err)
 		} else {
-			h.log.Info("EnsureVhostModulesLoaded(): successfully loaded kernel module", "module", moduleName)
+			h.log.Info(target, "successfully loaded kernel module", "module", moduleName)
 		}
 	}
 
 	// If we encountered any errors, return them
 	if len(errors) > 0 {
-		return fmt.Errorf("failed to load %d out of %d required kernel modules for vhost functionality: %v", len(errors), len(modulesToLoad), errors)
+		return fmt.Errorf("failed to load %d out of %d required kernel modules: %v", len(errors), len(modulesToLoad), errors)
 	}
 	return nil
 }
