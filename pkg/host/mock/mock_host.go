@@ -99,6 +99,20 @@ func (mr *MockInterfaceMockRecorder) EnsureDpdkModuleLoaded(driver any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureDpdkModuleLoaded", reflect.TypeOf((*MockInterface)(nil).EnsureDpdkModuleLoaded), driver)
 }
 
+// EnsureVdpaModuleIsLoaded mocks base method.
+func (m *MockInterface) EnsureVdpaModuleIsLoaded() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureVdpaModuleIsLoaded")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnsureVdpaModuleIsLoaded indicates an expected call of EnsureVdpaModuleIsLoaded.
+func (mr *MockInterfaceMockRecorder) EnsureVdpaModuleIsLoaded() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVdpaModuleIsLoaded", reflect.TypeOf((*MockInterface)(nil).EnsureVdpaModuleIsLoaded))
+}
+
 // EnsureVhostModulesLoaded mocks base method.
 func (m *MockInterface) EnsureVhostModulesLoaded() error {
 	m.ctrl.T.Helper()

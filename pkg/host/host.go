@@ -131,6 +131,7 @@ type Interface interface {
 	LoadKernelModule(moduleName string) error
 	EnsureDpdkModuleLoaded(driver string) error
 	EnsureVhostModulesLoaded() error
+	EnsureVdpaModuleIsLoaded() error
 
 	// RDMA device functions
 	GetRDMADevicesForPCI(pciAddr string) []string
@@ -733,6 +734,11 @@ func (h *Host) EnsureDpdkModuleLoaded(driver string) error {
 // EnsureVhostModulesLoaded ensures that the tun and vhost_net kernel modules are loaded
 func (h *Host) EnsureVhostModulesLoaded() error {
 	return h.ensureModulesLoaded("EnsureVhostModulesLoaded", []string{"tun", "vhost_net"})
+}
+
+// EnsureVdpaModuleIsLoaded ensures that the vdpa module is loaded
+func (h *Host) EnsureVdpaModuleIsLoaded() error {
+	return h.ensureModulesLoaded("EnsureVdpaModuleIsLoaded", []string{"vdpa"})
 }
 
 func (h *Host) ensureModulesLoaded(target string, modulesNames []string) error {
