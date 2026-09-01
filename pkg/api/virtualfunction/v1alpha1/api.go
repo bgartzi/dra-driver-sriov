@@ -41,11 +41,27 @@ var Decoder runtime.Decoder
 // VFConfig holds the set of parameters for configuring a VF.
 type VfConfig struct {
 	metav1.TypeMeta       `json:",inline"`
-	Driver                string `json:"driver,omitempty"`
-	AddVhostMount         bool   `json:"addVhostMount,omitempty"`
-	IfName                string `json:"ifName,omitempty"`
-	NetAttachDefName      string `json:"netAttachDefName,omitempty"`
-	NetAttachDefNamespace string `json:"netAttachDefNamespace,omitempty"`
+	Driver                string      `json:"driver,omitempty"`
+	AddVhostMount         bool        `json:"addVhostMount,omitempty"`
+	IfName                string      `json:"ifName,omitempty"`
+	NetAttachDefName      string      `json:"netAttachDefName,omitempty"`
+	NetAttachDefNamespace string      `json:"netAttachDefNamespace,omitempty"`
+	Vdpa                  *VdpaConfig `json:"vdpa,omitempty"`
+}
+
+type VdpaDriver string
+
+const (
+	VdpaDriverVirtio VdpaDriver = consts.VdpaDriverVirtio
+	VdpaDriverVhost  VdpaDriver = consts.VdpaDriverVhost
+)
+
+// VdpaConfig holds the set of parameters for configuring a VDPA device.
+type VdpaConfig struct {
+	Driver            VdpaDriver `json:"type,omitempty"`
+	MTU               uint16     `json:"mtu,omitempty"`
+	MaxVQP            uint16     `json:"maxVQP,omitempty"`
+	VirtioFeatureBits uint64     `json:"virtioFeatureBits,omitempty"`
 }
 
 // DefaultGpuConfig provides the default GPU configuration.
@@ -58,6 +74,7 @@ func DefaultVfConfig() *VfConfig {
 		Driver:           "",
 		IfName:           "",
 		NetAttachDefName: "",
+		Vdpa:             nil,
 	}
 }
 
@@ -71,6 +88,14 @@ func (c *VfConfig) Override(other *VfConfig) {
 	}
 	if other.NetAttachDefName != "" {
 		c.NetAttachDefName = other.NetAttachDefName
+	}
+	if other.Vdpa != nil {
+		c.Vdpa = &VdpaConfig{
+			Driver:            other.Vdpa.Driver,
+			MTU:               other.Vdpa.MTU,
+			MaxVQP:            other.Vdpa.MaxVQP,
+			VirtioFeatureBits: other.Vdpa.VirtioFeatureBits,
+		}
 	}
 }
 
