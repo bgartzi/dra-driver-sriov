@@ -42,19 +42,13 @@ func buildSysPath(path string) string {
 
 // buildSysBusPciPath constructs a PCI device path under /sys/bus/pci/devices
 func buildSysBusPciPath(pciAddress, subPath string) string {
-	basePath := filepath.Join(consts.SysBusPci, pciAddress)
-	if subPath != "" {
-		basePath = filepath.Join(basePath, subPath)
-	}
+	basePath := filepath.Join(consts.SysBusPci, pciAddress, subPath)
 	return buildSysPath(basePath)
 }
 
 // buildSysBusPciDriverPath constructs a driver path under /sys/bus/pci/drivers
 func buildSysBusPciDriverPath(driver, subPath string) string {
-	basePath := filepath.Join("/sys/bus/pci/drivers", driver)
-	if subPath != "" {
-		basePath = filepath.Join(basePath, subPath)
-	}
+	basePath := filepath.Join("/sys/bus/pci/drivers", driver, subPath)
 	return buildSysPath(basePath)
 }
 
